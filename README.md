@@ -1,2 +1,2 @@
 # devops-netology
-Home works by course
+Homeworks by course
