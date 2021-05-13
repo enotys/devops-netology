@@ -369,3 +369,120 @@ curl -X GET 'nodejs-demo'
 Выполненное домашнее задание пришлите ссылкой на .md-файл в вашем репозитории.
 
 ---
+
+## Доработки
+
+По заданию 2 заменил в докер файле COPY на использование ADD
+Можно было еще через `RUN wget`, но пришлось бы доставить его еще
+Использование шелл скрипта для запуска джава файла заменил на ентрипоинт
+
+```
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y openjdk-8-jre
+
+WORKDIR /tmp/jenkins/
+
+ADD https://updates.jenkins-ci.org/latest/jenkins.war /tmp/jenkins/jenkins.war
+
+EXPOSE 9090
+
+ENTRYPOINT ["java","-jar", "/tmp/jenkins/jenkins.war"]
+CMD ["--httpPort=9090"]
+```
+
+https://hub.docker.com/r/enotys/jenkins-ubuntu
+
+По заданию 3 заменил ENTRYPOINT
+
+```
+FROM node
+
+COPY ./nodejs-demo ./nodejs-demo
+
+WORKDIR /nodejs-demo
+
+RUN npm install
+
+EXPOSE 3000 80 443
+
+ENTRYPOINT ["npm"]
+CMD ["start", "0.0.0.0"]
+```
+Запустил 2 контейнера один с приложением
+
+`docker run -itd -p 3000:3000 --network=node-demo-network nodejs-demo`
+
+второй с убунтой
+
+`docker run -itd --network=node-demo-network nodejs-ubuntu`
+
+Сеть есть:
+
+```
+MacBook-Pro-enot:node enot$ docker network inspect node-demo-network
+[
+    {
+        "Name": "node-demo-network",
+        "Id": "f7a4c40f44e8bb5fdce7f7f9222e529c83d6198d66291537b9dee97ae4222426",
+        "Created": "2021-05-07T12:19:46.7122689Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "3a6704faa146108201fb15f4c6b927011426e94fc4b6a744d76310e00d63b6ad": {
+                "Name": "sweet_margulis",
+                "EndpointID": "8b52552f4060d6f88e58cef92caafb8a5a944d28d53a16e55db1160e0547ff78",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            },
+            "d509a0eb6e18eefb4e68df2db6898fc5c20b2cae7436e3432f1532b1d9d49ee4": {
+                "Name": "mystifying_murdock",
+                "EndpointID": "70e5bdd69b2d9aef56bfbdb68e5d8ca32d52400cb5abb1280505bb654140f667",
+                "MacAddress": "02:42:ac:12:00:03",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+```
+
+сделал 
+
+`docker exec -it d509a0eb6e18 bash`
+
+и вызов курла заработал по IP
+```
+root@d509a0eb6e18:/# curl -I 172.18.0.2:3000
+HTTP/1.1 200 OK
+Cache-Control: private, no-cache, no-store, no-transform, must-revalidate
+Expires: -1
+Pragma: no-cache
+Content-Type: text/html; charset=utf-8
+Content-Length: 524946
+ETag: W/"80292-QyCAzxdazWNb94dg58BzePehos8"
+Date: Thu, 13 May 2021 11:00:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+```
