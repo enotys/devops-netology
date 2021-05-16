@@ -486,3 +486,21 @@ Date: Thu, 13 May 2021 11:00:32 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 ```
+
+### Доработки 2
+
+Dockerfile для amazone  
+
+```
+FROM amazoncorretto:latest
+
+WORKDIR /tmp/jenkins/
+
+ADD https://updates.jenkins-ci.org/latest/jenkins.war /tmp/jenkins/jenkins.war
+
+EXPOSE 8080
+
+ENTRYPOINT ["java","-jar", "/tmp/jenkins/jenkins.war"]
+
+```
+ссылка на образ https://hub.docker.com/repository/docker/enotys/amazone-jenkins
